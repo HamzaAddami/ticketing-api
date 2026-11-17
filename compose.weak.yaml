@@ -1,0 +1,21 @@
+# Deliberately insecure local test mode. Never use outside the lab.
+services:
+  api:
+    build: .
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ticketing-weak-data:/app/data
+    user: "0:0"
+    read_only: false
+    networks:
+      - ticketing-weak
+
+networks:
+  ticketing-weak:
+    driver: bridge
+
+volumes:
+  ticketing-weak-data:

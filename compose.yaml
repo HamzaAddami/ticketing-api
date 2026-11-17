@@ -1,0 +1,26 @@
+services:
+  api:
+    build: .
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ticketing-data:/app/data
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    init: true
+    networks:
+      - ticketing-private
+
+networks:
+  ticketing-private:
+    driver: bridge
+
+volumes:
+  ticketing-data:
