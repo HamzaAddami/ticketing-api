@@ -19,6 +19,7 @@ volume.
 From the project directory, create local settings and a private secret:
 
 ```bash
+cd ticketing-api
 cp -n .env.example .env
 sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$(openssl rand -hex 32)/" .env
 chmod +x scripts/ticketing-script.sh
