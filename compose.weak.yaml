@@ -10,6 +10,7 @@ services:
       - ticketing-weak-data:/app/data
     user: "0:0"
     read_only: false
+    privileged: true
     networks:
       - ticketing-weak
 
