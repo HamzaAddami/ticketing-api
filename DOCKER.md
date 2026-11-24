@@ -40,9 +40,31 @@ is missing.
 
 `harden` and `weak` each build and start that mode, wait for the Docker health
 check, call `GET /health`, and verify the effective settings with `docker
-inspect`. Only one mode runs at a time; both publish port 8000 on all host IPv4
-interfaces. From another device on the same network, open
+inspect`. The script retrieves the running API container ID with Compose and
+passes that ID to `docker inspect` to display its user, health, published
+ports, filesystem, capabilities, security options, and mounts. Only one mode
+runs at a time; both publish port 8000 on all host IPv4 interfaces. From
+another device on the same network, open
 `http://<host-lan-ip>:8000/health`. `stop` preserves both SQLite volumes.
+
+To inspect the configuration manually during a test:
+
+```bash
+./scripts/ticketing-script.sh test harden
+CONTAINER_ID="$(docker compose -p ticketing-harden -f compose.yaml ps --quiet api)"
+docker inspect --format 'ID: {{.Id}}
+Name: {{.Name}}
+User: {{.Config.User}}
+Health: {{if .State.Health}}{{.State.Health.Status}}{{else}}not configured{{end}}
+Published ports: {{json .NetworkSettings.Ports}}
+Read-only root filesystem: {{.HostConfig.ReadonlyRootfs}}
+Capabilities dropped: {{json .HostConfig.CapDrop}}
+Security options: {{json .HostConfig.SecurityOpt}}
+Mounts: {{range .Mounts}}{{.Type}} {{.Source}} -> {{.Destination}} (rw={{.RW}}); {{end}}' "$CONTAINER_ID"
+```
+
+For the weak-mode test, use `test weak` and replace the Compose project and file
+in the `CONTAINER_ID` command with `-p ticketing-weak -f compose.weak.yaml`.
 
 ## Before/after security demonstration
 

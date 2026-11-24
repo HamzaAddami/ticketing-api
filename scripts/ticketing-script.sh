@@ -53,6 +53,23 @@ container_id() {
     printf '%s' "$id"
 }
 
+show_container_config() {
+    local id="$1"
+    printf '\n=== Docker configuration for container %s ===\n' "$id"
+    docker inspect --format 'Name: {{.Name}}
+ID: {{.Id}}
+Image: {{.Config.Image}}
+State: {{.State.Status}}
+Health: {{if .State.Health}}{{.State.Health.Status}}{{else}}not configured{{end}}
+User: {{if .Config.User}}{{.Config.User}}{{else}}root (default){{end}}
+Network mode: {{.HostConfig.NetworkMode}}
+Published ports: {{json .NetworkSettings.Ports}}
+Read-only root filesystem: {{.HostConfig.ReadonlyRootfs}}
+Capabilities dropped: {{json .HostConfig.CapDrop}}
+Security options: {{json .HostConfig.SecurityOpt}}
+Mounts: {{range .Mounts}}{{.Type}} {{.Source}} -> {{.Destination}} (rw={{.RW}}); {{end}}' "$id"
+}
+
 wait_for_api() {
     local compose_name="$1"
     local -n compose_files=$compose_name
@@ -159,6 +176,7 @@ start_mode() {
     compose_mode "$compose_name" up --detach --build --force-recreate
     wait_for_api "$compose_name"
     id="$(container_id "$compose_name")"
+    show_container_config "$id"
 
     if [[ "$mode" == "harden" ]]; then
         assert_hardened "$id"
