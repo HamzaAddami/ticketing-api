@@ -2,8 +2,11 @@
 
 The Compose setup works with Docker Engine and the Docker Compose v2 plugin on
 an Ubuntu host. The image uses the official Python 3.12 slim Linux image; it
-does not require a Windows host. The API binds only to localhost, and SQLite
-persists in the `ticketing-data` Docker volume.
+does not require a Windows host. The API is published on all host IPv4
+interfaces at port 8000 so it can be reached through the host's LAN IP.
+Restrict access with the host firewall and use only on a trusted network; the
+API uses HTTP without TLS. SQLite persists in the `ticketing-data` Docker
+volume.
 
 ## Prerequisites
 
@@ -37,8 +40,9 @@ is missing.
 
 `harden` and `weak` each build and start that mode, wait for the Docker health
 check, call `GET /health`, and verify the effective settings with `docker
-inspect`. Only one mode runs at a time; both use `127.0.0.1:8000`. `stop`
-preserves both SQLite volumes.
+inspect`. Only one mode runs at a time; both publish port 8000 on all host IPv4
+interfaces. From another device on the same network, open
+`http://<host-lan-ip>:8000/health`. `stop` preserves both SQLite volumes.
 
 ## Before/after security demonstration
 
@@ -57,7 +61,7 @@ The hardened container:
 - Uses a read-only root filesystem; `/app/data` and `/tmp` are the only
   writable locations.
 - Drops all Linux capabilities and enables `no-new-privileges`.
-- Publishes HTTP only on `127.0.0.1` and uses a private bridge network.
+- Publishes HTTP on all host IPv4 interfaces and uses a private bridge network.
 - Provides an automatic `/health` Docker health check.
 
 Capture the script output as test evidence. Inspect the effective Compose
